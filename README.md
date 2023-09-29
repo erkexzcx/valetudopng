@@ -72,7 +72,18 @@ Now move to installation and usage sections, where you will be able to easily "e
 
 ### Binaries
 
-TODO
+See [Releases](https://github.com/erkexzcx/valetudopng/releases).
+
+```bash
+$ tar -xvzf valetudopng_v1.0.0_linux_amd64.tar.gz 
+valetudopng_v1.0.0_linux_amd64
+$ ./valetudopng_v1.0.0_linux_amd64 --help
+Usage of ./valetudopng_v1.0.0_linux_amd64:
+  -config string
+        Path to configuration file (default "config.yml")
+  -version
+        prints version of the application
+```
 
 ### Docker compose
 
