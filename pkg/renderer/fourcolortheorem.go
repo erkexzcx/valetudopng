@@ -43,6 +43,9 @@ func (g *Graph) ColorVertices() {
 	}
 
 	sort.Slice(vertices, func(i, j int) bool {
+		if len(vertices[i].Adjacent) == len(vertices[j].Adjacent) {
+			return vertices[i].ID < vertices[j].ID
+		}
 		return len(vertices[i].Adjacent) > len(vertices[j].Adjacent)
 	})
 
@@ -70,8 +73,8 @@ func (g *Graph) ColorVertices() {
 
 var fourColors = []color.RGBA{
 	{R: 25, G: 161, B: 161, A: 255}, // Teal
-	{R: 223, G: 86, B: 24, A: 255},  // Dark Orange
 	{R: 122, G: 192, B: 55, A: 255}, // Light Green
+	{R: 255, G: 155, B: 87, A: 255}, // Orange
 	{R: 247, G: 200, B: 65, A: 255}, // Light Yellow
 }
 
