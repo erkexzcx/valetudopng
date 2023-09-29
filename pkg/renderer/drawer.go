@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"math"
 	"runtime"
-	"strconv"
 	"sync"
 
 	"github.com/fogleman/gg"
@@ -70,12 +69,9 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 		}
 	}
 
-	// Calculate segment colors
+	// Load colors for each segment
 	vi.segmentColor = make(map[string]color.RGBA)
-	for _, layer := range vi.layers["segment"] {
-		idInt, _ := strconv.Atoi(layer.MetaData.SegmentId)
-		vi.segmentColor[layer.MetaData.SegmentId] = getSegmentColor(idInt, len(vi.layers["segment"]))
-	}
+	vi.FindFourColors()
 
 	// Find map bounds within robot's coordinates system (from given layers)
 	vi.robotCoords.minX = math.MaxInt32
