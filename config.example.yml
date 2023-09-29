@@ -1,0 +1,67 @@
+mqtt:
+  connection:
+    # Configure connection to your MQTT server
+    host: 192.168.0.123
+    port: 1883
+
+    # Will become valetudopng_consumer and valetudopng_producer
+    client_id_prefix: valetudopng
+
+    # Leave empty or delete these fields if not used
+    username:
+    password:
+
+    # Leave empty or delete these fields if not used
+    tls_ca_path:
+    tls_insecure:
+
+  topics:
+    # Should match "Topic prefix" in Valetudo MQTT settings
+    valetudo_prefix: valetudo
+
+    # Should match "Identifier" in Valetudo MQTT settings
+    valetudo_identifier: rockrobo
+
+    # Home assistant autoconf topic prefix
+    # Do not change unless you know what you are doing
+    ha_autoconf_prefix: homeassistant
+
+  # Leave this set to false...
+  # No idea about the use of this, but it sends image to MQTT
+  # encoded in base64.
+  image_as_base64: false
+
+# Access image via HTTP: /api/map/image
+# Also needed to access /api/map/image/debug
+http:
+  enabled: true
+  bind: 0.0.0.0:3000
+
+map:
+  # Do not render map more than once within below specified interval
+  min_refresh_int: 1000ms
+
+  # 4 is default
+  scale: 4
+
+  # Rotate clockwise this amount of times.
+  # 0 - no rotation
+  # 1 - 90 clockwise
+  # 2 - 180 clockwise
+  # 3 - 270 clockwise
+  rotate: 0
+
+  # Set map size within robot's coordinates system, or leave
+  # empty to make map fully dynamic. This is useful if vacuum
+  # has seen outside through your entrance door, or just seen a
+  # mirror and draws non-existent areas. Crop it once and for
+  # good this way.
+  # 
+  # For below coordinates in robot's coordinate system, visit
+  # http://<ip>:<port>/api/map/image/debug
+  # 
+  custom_limits:
+    start_x: 
+    start_y: 
+    end_x: 
+    end_y: 

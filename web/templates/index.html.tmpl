@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: lightgrey;
+        }
+    </style>
+</head>
+<body>
+    <div id="rotation_disclaimer" style="display: none;">Trying to find coordinates for 'custom_limits' fields? Make sure 'rotate: 0' before doing that.</div>
+    <canvas id="canvas" style="position: absolute; pointer-events: none; image-rendering: pixelated;"></canvas>
+    <img src="../image" id="img" style="image-rendering: pixelated; background-color : white;"/>
+    <div id="popup" style="position: absolute; display: none; background-color: white; border: 1px solid black;"></div>
+
+    <div>
+        <p>You can copy/paste this for custom:xiaomi-vacuum-map-card card:</p>
+        <p><pre><code id="carddata">(click twice on map to generate)</code></pre></p>
+
+        <p>Use this in valetudopng config to bound your map to these static coordiates:</p>
+        <p><pre><code id="cofigdata">(click twice on map to generate)</code></pre></p>
+
+        <p>Note that 1 block (pixel) in robot's vacuum system is {{ .PixelSize }}. Want to extend rectangle by 1 block? Just add 5 to it's X or Y axis.</p>
+    </div>
+
+    <script>
+        // Load Golang template variables before other scripts
+        var robotMinX = {{ .RobotMinX }};
+        var robotMinY = {{ .RobotMinY }};
+        var robotMaxX = {{ .RobotMaxX }};
+        var robotMaxY = {{ .RobotMaxY }};
+        var rotatedTimes = {{ .RotatedTimes }};
+        var scale = {{ .Scale }};
+        var pixelSize = {{ .PixelSize }};
+    </script>
+
+    <script src="./debug/static/js/JQuery.js"></script>
+    <script src="./debug/static/js/App.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var $canvas = $('#canvas');
+            var $img = $('#img');
+            var $popup = $('#popup');
+            var ctx = $canvas[0].getContext('2d');
+
+            $canvas.attr('width', $img.width());
+            $canvas.attr('height', $img.height());
+            $canvas.offset($img.offset());
+
+            var $carddata = $('#carddata');
+            var $cofigdata = $('#cofigdata');
+
+            // "Canvas drawing object"
+            cdo.canvas = $canvas;
+            cdo.img = $img;
+            cdo.popup = $popup;
+            cdo.ctx = ctx;
+            cdo.carddata = $carddata;
+            cdo.cofigdata = $cofigdata;
+
+            $img.on('mousemove', function(e) {
+                var imageX = e.pageX - $(this).offset().left;
+                var imageY = e.pageY - $(this).offset().top;
+
+                cdo.clear();
+                cdo.drawCrosshair(imageX, imageY);
+                cdo.drawRectangle(imageX, imageY);
+                cdo.showPopup(imageX, imageY, e.pageX, e.pageY);
+            });
+
+            $img.on('mouseleave', function() {
+                cdo.hidePopup();
+                cdo.clear();
+                cdo.drawRectangle(0, 0);
+            });
+
+            $img.on('click', function(e) {
+                var imageX = e.pageX - $(this).offset().left;
+                var imageY = e.pageY - $(this).offset().top;
+                cdo.addRectangleCoordinates(imageX, imageY);
+
+                cdo.clear();
+                cdo.drawCrosshair(imageX, imageY);
+                cdo.drawRectangle(imageX, imageY);
+            });
+        });
+    </script>
+
+</body>
+</html>
