@@ -79,6 +79,10 @@ jobs:
           done
 
       - name: Upload binary to release
-        uses: softprops/action-gh-release@v1
+        uses: svenstaro/upload-release-action@v2
         with:
-          files: valetudopng_*.tar.gz
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: valetudopng_*.tar.gz
+          tag: ${{ github.event.release.tag_name }}
+          overwrite: true
+          file_glob: true
