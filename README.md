@@ -1,19 +1,6 @@
 # ValetudoPNG
 
-Valetudo map renderer (alternative to [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo)), written in Go.
-
-# Motyvation
-
-The [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) project has quite few nuances:
-
-1. It's literally not working (see [here](https://github.com/Hypfer/ICantBelieveItsNotValetudo/pull/92)).
-2. Uncomfortably long name.
-3. Author does not create CI/CD job for Docker image building (and _deleted_ my raised issue where I literally provided the full code as a suggestion).
-4. Has no instructions, guidelines or output for calibration points to be used with [PiotrMachowski/lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-5. Written in Javascript for PNG rendering. This is not the right language for resource-intensive task.
-6. Image cropping does not exist.
-
-Okay, there is also [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) which also crashes with Valetudo and basically does not work at all...
+A Valetudo map renderer (ex [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo)) for Home Assistant.
 
 # Features
 
