@@ -114,9 +114,9 @@ internal_variables:
   topic: valetudo/rockrobo
 map_modes:
   - template: vacuum_clean_zone_predefined
+    selection_type: PREDEFINED_RECTANGLE
     predefined_selections:
-      - id: Entrance
-        outline: [[2310,2975],[2185,2975],[2185,3090],[2310,3090]]
+      - zones: [[2185,2975,2310,3090]]
         label:
           text: Entrance
           x: 2247.5
