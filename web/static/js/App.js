@@ -95,7 +95,7 @@ cdo.drawRectangle = function (rawImgX, rawImgY) {
     res1 = calculateMapPosition(sx, sy);
     res2 = calculateMapPosition(ex-scale, ey-scale);
 
-    cdo.setCardData(res1.robotX, res1.robotY, res2.robotX, res1.robotY, res2.robotX, res2.robotY, res1.robotX, res2.robotY);
+    cdo.setCardData(res1.robotX, res1.robotY, res2.robotX, res2.robotY);
     cdo.setCofigData(res1.robotX, res1.robotY, res2.robotX, res2.robotY);
 }
 
@@ -123,14 +123,15 @@ cdo.hidePopup = function () {
 
 // Set robot coordinates, not map coordinates
 // for xiaomi-vacuum-map-card
-cdo.setCardData = function(x1, y1, x2, y2, x3, y3, x4, y4){
-    middleX = (x3+x1)/2
-    middleY = (y3+y1)/2
+cdo.setCardData = function(x1, y1, x2, y2){
+    middleX = (x2+x1)/2
+    middleY = (y2+y1)/2
     str = `map_modes:
   - template: vacuum_clean_zone_predefined
+    # See https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card/issues/662
+    selection_type: PREDEFINED_RECTANGLE
     predefined_selections:
-      - id: Entrance
-        outline: [[${x1},${y1}],[${x2},${y2}],[${x3},${y3}],[${x4},${y4}]]
+      - zones: [[${x1},${y1},${x2},${y2}]]
         label:
           text: Entrance
           x: ${middleX}
