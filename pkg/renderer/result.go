@@ -6,6 +6,10 @@ import (
 	"image/png"
 )
 
+var pngEncoder = png.Encoder{
+	CompressionLevel: png.BestSpeed,
+}
+
 type Result struct {
 	Image       *image.Image
 	ImageSize   *ImgSize
@@ -29,7 +33,7 @@ type RbtCoords struct {
 
 func (r *Result) RenderPNG() ([]byte, error) {
 	var b bytes.Buffer
-	err := png.Encode(&b, *r.Image)
+	err := pngEncoder.Encode(&b, *r.Image)
 	if err != nil {
 		return nil, err
 	}

@@ -49,17 +49,20 @@ func Start(c *config.Config) {
 		}
 		renderedAt = time.Now().Add(c.Map.MinRefreshInt)
 
-		timestamp := time.Now()
+		tsStart := time.Now()
 		res, err := r.Render(payload, c.Map)
 		if err != nil {
 			log.Fatalln("Error occurred while rendering map:", err)
 		}
+		drawnInMS := time.Since(tsStart).Milliseconds()
+
 		img, err := res.RenderPNG()
 		if err != nil {
 			log.Fatalln("Error occurred while rendering PNG image:", err)
 		}
-		elapsedDuration := time.Since(timestamp)
-		log.Printf("Image rendered in %v milliseconds\n", elapsedDuration.Milliseconds())
+		renderedIn := time.Since(tsStart).Milliseconds() - drawnInMS
+
+		log.Printf("Image rendered! drawing:%dms, encoding:%dms, size:%s\n", drawnInMS, renderedIn, ByteCountSI(int64(len(img))))
 
 		if !(c.Mqtt.ImageAsBase64 && !c.HTTP.Enabled) {
 			renderedPNGMux.Lock()
@@ -84,4 +87,17 @@ func Start(c *config.Config) {
 	// Block main function here until an interrupt is received
 	<-interrupt
 	fmt.Println("Program interrupted")
+}
+
+func ByteCountSI(b int64) string {
+	const unit = 1000
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f%cB", float64(b)/float64(div), "kMGTPE"[exp])
 }
