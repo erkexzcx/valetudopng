@@ -15,9 +15,9 @@ type CalibrationCoords struct {
 }
 
 func (vi *valetudoImage) getCalibrationPointsJSON() []byte {
-	calImgx1, calImgy1 := vi.layoutImageCoordRotate(0, 0)
-	calImgx2, calImgy2 := vi.layoutImageCoordRotate(vi.robotCoords.maxX-vi.robotCoords.minX, 0)
-	calImgx3, calImgy3 := vi.layoutImageCoordRotate(vi.robotCoords.maxX-vi.robotCoords.minX, vi.robotCoords.maxY-vi.robotCoords.minY)
+	calImgx1, calImgy1 := vi.RotateLayer(0, 0)
+	calImgx2, calImgy2 := vi.RotateLayer(vi.robotCoords.maxX-vi.robotCoords.minX, 0)
+	calImgx3, calImgy3 := vi.RotateLayer(vi.robotCoords.maxX-vi.robotCoords.minX, vi.robotCoords.maxY-vi.robotCoords.minY)
 	scale := int(vi.renderer.settings.Scale)
 
 	data := []*CalibrationPoint{

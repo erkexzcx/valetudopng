@@ -40,6 +40,10 @@ type valetudoImage struct {
 
 	// Segment ID to segment (room) color
 	segmentColor map[string]color.RGBA
+
+	// Rotation functions
+	RotateLayer  rotationFunc
+	RotateEntity rotationFunc
 }
 
 func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
@@ -123,6 +127,10 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 	// img := image.NewRGBA(image.Rect(0, 0, 100, 100))
 	// would result in an image that has X from 0 to 99, Y from 0 to 99
 	// width 100 and height 100
+
+	// Create rotation funcs
+	vi.RotateLayer = vi.getRotationFunc(true)
+	vi.RotateEntity = vi.getRotationFunc(false)
 
 	return vi
 }
@@ -237,4 +245,35 @@ func (vi *valetudoImage) upscaleToGGContext() {
 	vi.ggContext = gg.NewContextForRGBA(scaledImg)
 	vi.scaledImgWidth = scaledImgWidth
 	vi.scaledImgHeight = scaledImgHeight
+}
+
+type rotationFunc func(x, y int) (int, int)
+
+// For layers, "subtractOne" should be true
+// For entities, "subtractOne" should be false
+func (vi *valetudoImage) getRotationFunc(subtractOne bool) rotationFunc {
+	switch vi.renderer.settings.RotationTimes {
+	case 0:
+		// No rotation
+		return func(x, y int) (int, int) { return x, y }
+	case 1:
+		// 90 degrees clockwise
+		if subtractOne {
+			return func(x, y int) (int, int) { return vi.unscaledImgWidth - 1 - y, x }
+		}
+		return func(x, y int) (int, int) { return vi.unscaledImgWidth - y, x }
+	case 2:
+		// 180 degrees clockwise
+		if subtractOne {
+			return func(x, y int) (int, int) { return vi.unscaledImgWidth - 1 - x, vi.unscaledImgHeight - 1 - y }
+		}
+		return func(x, y int) (int, int) { return vi.unscaledImgWidth - x, vi.unscaledImgHeight - y }
+	case 3:
+		// 270 degrees clockwise
+		if subtractOne {
+			return func(x, y int) (int, int) { return y, vi.unscaledImgHeight - 1 - x }
+		}
+		return func(x, y int) (int, int) { return y, vi.unscaledImgHeight - x }
+	}
+	return func(x, y int) (int, int) { return x, y }
 }

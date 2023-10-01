@@ -6,26 +6,8 @@ package renderer
 func (vi *valetudoImage) entityToImageCoords(vacuumX, vacuumY int) (float64, float64) {
 	imgX := (vacuumX/vi.valetudoJSON.PixelSize - vi.robotCoords.minX)
 	imgY := (vacuumY/vi.valetudoJSON.PixelSize - vi.robotCoords.minY)
-	rotatedX, rotatedY := vi.entityImageCoordRotate(imgX, imgY)
+	rotatedX, rotatedY := vi.RotateEntity(imgX, imgY)
 	return float64(rotatedX) * vi.renderer.settings.Scale, float64(rotatedY) * vi.renderer.settings.Scale
-}
-
-func (vi *valetudoImage) entityImageCoordRotate(x, y int) (adjustedX, adjustedY int) {
-	switch vi.renderer.settings.RotationTimes {
-	case 0:
-		// No rotation
-		return x, y
-	case 1:
-		// 90 degrees clockwise
-		return vi.unscaledImgWidth - y, x
-	case 2:
-		// 180 degrees clockwise
-		return vi.unscaledImgWidth - x, vi.unscaledImgHeight - y
-	case 3:
-		// 270 degrees clockwise
-		return y, vi.unscaledImgHeight - x
-	}
-	return
 }
 
 func (vi *valetudoImage) drawEntityVirtualWall(e *Entity) {
