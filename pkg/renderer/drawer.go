@@ -111,7 +111,7 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 	vi.unscaledImgHeight = vi.robotCoords.maxY - vi.robotCoords.minY + 1
 
 	// Switch width and height if needed according to rotation
-	if vi.renderer.settings.RotationTimes == 1 || vi.renderer.settings.RotationTimes == 3 {
+	if vi.renderer.settings.RotationTimes%2 != 0 {
 		vi.unscaledImgWidth, vi.unscaledImgHeight = vi.unscaledImgHeight, vi.unscaledImgWidth
 	}
 
