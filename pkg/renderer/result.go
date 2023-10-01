@@ -6,9 +6,7 @@ import (
 	"image/png"
 )
 
-var pngEncoder = png.Encoder{
-	CompressionLevel: png.BestSpeed,
-}
+var pngEncoder = png.Encoder{CompressionLevel: png.BestSpeed}
 
 type Result struct {
 	Image       *image.Image
