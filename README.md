@@ -1,19 +1,13 @@
 # ValetudoPNG
 
-Valetudo map renderer (alternative to [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo)), written in Go.
+ValetudoPNG is a service designed to render map from Valetudo-enabled vacuum robot into a more accessible PNG format. This PNG map is sent to Home Assistant via MQTT, where it can be viewed as a real-time camera feed. ValetudoPNG was specifically developed to integrate with third-party frontend cards, such as the [PiotrMachowski/lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
 
-# Motyvation
+Alternative projects:
+* [sca075/valetudo_vacuum_camera](https://github.com/sca075/valetudo_vacuum_camera) - deploys as HACS addon, written in Python.
 
-The [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) project has quite few nuances:
-
-1. It's literally not working (see [here](https://github.com/Hypfer/ICantBelieveItsNotValetudo/pull/92)).
-2. Uncomfortably long name.
-3. Author does not create CI/CD job for Docker image building (and _deleted_ my raised issue where I literally provided the full code as a suggestion).
-4. Has no instructions, guidelines or output for calibration points to be used with [PiotrMachowski/lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
-5. Written in Javascript for PNG rendering. This is not the right language for resource-intensive task.
-6. Image cropping does not exist.
-
-Okay, there is also [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) which also crashes with Valetudo and basically does not work at all...
+Broken or dead projects:
+* [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) - original project, written in javascript for NodeJS.
+* [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) - fork of original project to be used with [rand256/valetudo](https://github.com/rand256/valetudo). Does not work with [Hypfer/Valetudo](https://github.com/Hypfer/Valetudo).
 
 # Features
 
@@ -85,6 +79,29 @@ Usage of ./valetudopng_v1.0.0_linux_amd64:
         prints version of the application
 ```
 
+You can technically install it on robot itself:
+```
+[root@rockrobo ~]# grep -e scale -e min_refresh_int config.yml 
+  min_refresh_int: 5s
+  scale: 2
+[root@rockrobo ~]# ./valetudopng_v1.0.2_linux_armv7 
+2023/10/01 09:00:09 [MQTT producer] Connected
+2023/10/01 09:00:09 [MQTT consumer] Connected
+2023/10/01 09:00:09 [MQTT consumer] Subscribed to map data topic
+2023/10/01 09:00:09 Image rendered in 128 milliseconds
+2023/10/01 09:00:19 Image rendered in 156 milliseconds
+2023/10/01 09:00:19 Skipping image render due to min_refresh_int
+2023/10/01 09:00:22 Skipping image render due to min_refresh_int
+2023/10/01 09:00:23 Skipping image render due to min_refresh_int
+2023/10/01 09:00:25 Image rendered in 142 milliseconds
+2023/10/01 09:00:27 Skipping image render due to min_refresh_int
+2023/10/01 09:00:29 Skipping image render due to min_refresh_int
+2023/10/01 09:00:31 Image rendered in 170 milliseconds
+```
+Download binary appropriate for your robot's CPU and follow the service installation guidelines of another project: https://github.com/porech/roborock-oucher
+
+Note that this service is still resources-intensive and drains more battery when robot is not charging. Generally it is not recommended to host it on robot.
+
 ### Docker compose
 
 ```yaml
@@ -127,9 +144,9 @@ internal_variables:
   topic: valetudo/rockrobo
 map_modes:
   - template: vacuum_clean_zone_predefined
+    selection_type: PREDEFINED_RECTANGLE
     predefined_selections:
-      - id: Entrance
-        outline: [[2310,2975],[2185,2975],[2185,3090],[2310,3090]]
+      - zones: [[2185,2975,2310,3090]]
         label:
           text: Entrance
           x: 2247.5
