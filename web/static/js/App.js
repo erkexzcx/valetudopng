@@ -92,11 +92,12 @@ cdo.drawRectangle = function (rawImgX, rawImgY) {
     this.ctx.fillStyle = 'rgba(158, 221, 255, 0.60)';
     this.ctx.fillRect(sx, sy, width, height);
 
-    res1 = calculateMapPosition(sx, sy);
-    res2 = calculateMapPosition(ex-scale, ey-scale);
+    resStart = calculateMapPosition(sx, sy);
+    resConfig = calculateMapPosition(ex-scale, ey-scale);
+    resCard = calculateMapPosition(ex, ey);
 
-    cdo.setCardData(res1.robotX, res1.robotY, res2.robotX, res2.robotY);
-    cdo.setCofigData(res1.robotX, res1.robotY, res2.robotX, res2.robotY);
+    cdo.setCofigData(resStart.robotX, resStart.robotY, resConfig.robotX, resConfig.robotY);
+    cdo.setCardData(resStart.robotX, resStart.robotY, resCard.robotX, resCard.robotY);
 }
 
 cdo.addRectangleCoordinates = function (rawImgX, rawImgY) {
