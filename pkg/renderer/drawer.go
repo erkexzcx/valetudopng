@@ -75,7 +75,7 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 
 	// Load colors for each segment
 	vi.segmentColor = make(map[string]color.RGBA)
-	vi.FindFourColors()
+	vi.findFourColors()
 
 	// Find map bounds within robot's coordinates system (from given layers)
 	vi.robotCoords.minX = math.MaxInt32
