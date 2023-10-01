@@ -1,6 +1,13 @@
 # ValetudoPNG
 
-A Valetudo map renderer (ex [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo)) for Home Assistant.
+ValetudoPNG is a service designed to render map from Valetudo-enabled vacuum robot into a more accessible PNG format. This PNG map is sent to Home Assistant via MQTT, where it can be viewed as a real-time camera feed. ValetudoPNG was specifically developed to integrate with third-party frontend cards, such as the [PiotrMachowski/lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
+
+Alternative projects:
+* [sca075/valetudo_vacuum_camera](https://github.com/sca075/valetudo_vacuum_camera) - deploys as HACS addon, written in Python.
+
+Broken or dead projects:
+* [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) - original project, written in javascript for NodeJS.
+* [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) - fork of original project. Added many features, but does not work with Valetudo.
 
 # Features
 
@@ -71,6 +78,29 @@ Usage of ./valetudopng_v1.0.0_linux_amd64:
   -version
         prints version of the application
 ```
+
+You can technically install it on robot itself:
+```
+[root@rockrobo ~]# grep -e scale -e min_refresh_int config.yml 
+  min_refresh_int: 5s
+  scale: 2
+[root@rockrobo ~]# ./valetudopng_v1.0.2_linux_armv7 
+2023/10/01 09:00:09 [MQTT producer] Connected
+2023/10/01 09:00:09 [MQTT consumer] Connected
+2023/10/01 09:00:09 [MQTT consumer] Subscribed to map data topic
+2023/10/01 09:00:09 Image rendered in 128 milliseconds
+2023/10/01 09:00:19 Image rendered in 156 milliseconds
+2023/10/01 09:00:19 Skipping image render due to min_refresh_int
+2023/10/01 09:00:22 Skipping image render due to min_refresh_int
+2023/10/01 09:00:23 Skipping image render due to min_refresh_int
+2023/10/01 09:00:25 Image rendered in 142 milliseconds
+2023/10/01 09:00:27 Skipping image render due to min_refresh_int
+2023/10/01 09:00:29 Skipping image render due to min_refresh_int
+2023/10/01 09:00:31 Image rendered in 170 milliseconds
+```
+Download binary appropriate for your robot's CPU and follow the service installation guidelines of another project: https://github.com/porech/roborock-oucher
+
+Note that this service is still resources-intensive and drains more battery when robot is not charging. Generally it is not recommended to host it on robot.
 
 ### Docker compose
 
