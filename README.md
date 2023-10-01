@@ -7,7 +7,7 @@ Alternative projects:
 
 Broken or dead projects:
 * [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) - original project, written in javascript for NodeJS.
-* [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) - fork of original project. Added many features, but does not work with Valetudo.
+* [rand256/valetudo-mapper](https://github.com/rand256/valetudo-mapper) - fork of original project to be used with [rand256/valetudo](https://github.com/rand256/valetudo). Does not work with [Hypfer/Valetudo](https://github.com/Hypfer/Valetudo).
 
 # Features
 
