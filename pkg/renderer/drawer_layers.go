@@ -15,7 +15,7 @@ func (vi *valetudoImage) drawLayer(l *Layer, col color.RGBA, wg *sync.WaitGroup)
 
 			for c := 0; c < count; c++ {
 				x, y := vi.RotateLayer(drawX+c, drawY)
-				vi.img.Set(x, y, col)
+				vi.img.SetRGBA(x, y, col)
 			}
 		}
 		wg.Done()

@@ -232,7 +232,7 @@ func (vi *valetudoImage) upscaleToGGContext() {
 					for dy := 0; dy < scale; dy++ {
 						for dx := 0; dx < scale; dx++ {
 							newX, newY := x*scale+dx, y*scale+dy
-							scaledImg.Set(newX, newY, col)
+							scaledImg.SetRGBA(newX, newY, col)
 						}
 					}
 				}
