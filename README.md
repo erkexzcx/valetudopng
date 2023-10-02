@@ -4,6 +4,7 @@ ValetudoPNG is a service designed to render map from Valetudo-enabled vacuum rob
 
 Alternative projects:
 * [sca075/valetudo_vacuum_camera](https://github.com/sca075/valetudo_vacuum_camera) - deploys as HACS addon, written in Python.
+* [alexkn/node-red-contrib-valetudo](https://github.com/alexkn/node-red-contrib-valetudo) - nodered map renderer.
 
 Broken or dead projects:
 * [Hypfer/ICantBelieveItsNotValetudo](https://github.com/Hypfer/ICantBelieveItsNotValetudo) - original project, written in javascript for NodeJS.
