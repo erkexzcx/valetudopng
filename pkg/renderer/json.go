@@ -59,7 +59,7 @@ type Entity struct {
 }
 
 type MetaDataEntity struct {
-	Angle int `json:"angle,omitempty"`
+	Angle float64 `json:"angle,omitempty"`
 }
 
 func toJSON(payload []byte) (*ValetudoJSON, error) {

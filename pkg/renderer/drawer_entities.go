@@ -36,7 +36,7 @@ func (vi *valetudoImage) drawEntityPath(e *Entity) {
 
 func (vi *valetudoImage) drawEntityRobot(e *Entity, xOffset, yOffset int) {
 	coordX, coordY := vi.entityToImageCoords(e.Points[0], e.Points[1])
-	angle := (e.MetaData.Angle + (vi.renderer.settings.RotationTimes * 90)) % 360
+	angle := (int(e.MetaData.Angle) + (vi.renderer.settings.RotationTimes * 90)) % 360
 	vi.ggContext.DrawImageAnchored(vi.renderer.assetRobot[angle], int(coordX)+xOffset, int(coordY)+yOffset, 0.5, 0.5)
 }
 
