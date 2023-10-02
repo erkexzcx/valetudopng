@@ -81,22 +81,26 @@ Usage of ./valetudopng_v1.0.0_linux_amd64:
 
 You can technically install it on robot itself:
 ```
-[root@rockrobo ~]# grep -e scale -e min_refresh_int config.yml 
-  min_refresh_int: 5s
+[root@rockrobo ~]# grep -e scale config.yml
   scale: 2
-[root@rockrobo ~]# ./valetudopng_v1.0.2_linux_armv7 
-2023/10/01 09:00:09 [MQTT producer] Connected
-2023/10/01 09:00:09 [MQTT consumer] Connected
-2023/10/01 09:00:09 [MQTT consumer] Subscribed to map data topic
-2023/10/01 09:00:09 Image rendered in 128 milliseconds
-2023/10/01 09:00:19 Image rendered in 156 milliseconds
-2023/10/01 09:00:19 Skipping image render due to min_refresh_int
-2023/10/01 09:00:22 Skipping image render due to min_refresh_int
-2023/10/01 09:00:23 Skipping image render due to min_refresh_int
-2023/10/01 09:00:25 Image rendered in 142 milliseconds
-2023/10/01 09:00:27 Skipping image render due to min_refresh_int
-2023/10/01 09:00:29 Skipping image render due to min_refresh_int
-2023/10/01 09:00:31 Image rendered in 170 milliseconds
+[root@rockrobo ~]# ./valetudopng
+2023/10/02 07:18:10 [MQTT producer] Connected
+2023/10/02 07:18:10 [MQTT consumer] Connected
+2023/10/02 07:18:10 [MQTT consumer] Subscribed to map data topic
+2023/10/02 07:18:10 Image rendered! drawing:39ms, encoding:61ms, size:9.1kB
+2023/10/02 07:18:16 Image rendered! drawing:37ms, encoding:72ms, size:9.1kB
+2023/10/02 07:18:16 Image rendered! drawing:35ms, encoding:66ms, size:9.1kB
+2023/10/02 07:18:17 Image rendered! drawing:44ms, encoding:50ms, size:7.4kB
+2023/10/02 07:18:18 Image rendered! drawing:33ms, encoding:54ms, size:7.4kB
+2023/10/02 07:18:20 Image rendered! drawing:34ms, encoding:52ms, size:7.4kB
+2023/10/02 07:18:22 Image rendered! drawing:34ms, encoding:61ms, size:7.4kB
+2023/10/02 07:18:24 Image rendered! drawing:32ms, encoding:56ms, size:7.7kB
+2023/10/02 07:18:26 Image rendered! drawing:45ms, encoding:62ms, size:7.8kB
+2023/10/02 07:18:28 Image rendered! drawing:33ms, encoding:64ms, size:7.8kB
+2023/10/02 07:18:30 Image rendered! drawing:44ms, encoding:59ms, size:8.0kB
+2023/10/02 07:18:32 Image rendered! drawing:38ms, encoding:62ms, size:8.2kB
+2023/10/02 07:18:35 Image rendered! drawing:88ms, encoding:54ms, size:8.3kB
+2023/10/02 07:18:36 Image rendered! drawing:35ms, encoding:72ms, size:8.4kB
 ```
 Download binary appropriate for your robot's CPU and follow the service installation guidelines of another project: https://github.com/porech/roborock-oucher
 
