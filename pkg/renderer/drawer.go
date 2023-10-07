@@ -182,34 +182,6 @@ func (vi *valetudoImage) DrawAll() {
 	}
 }
 
-func (vi *valetudoImage) drawLayers() {
-	// Below 3 can be drawed at the same time.
-	// Either floor or segments layers exist, but not both.
-	wg := &sync.WaitGroup{}
-	var col color.RGBA
-
-	// Draw floor layers
-	col = color.RGBA{0, 118, 255, 255}
-	for _, l := range vi.layers["floor"] {
-		vi.drawLayer(l, col, wg)
-	}
-
-	// Draw wall layers
-	col = color.RGBA{30, 100, 100, 255}
-	for _, l := range vi.layers["wall"] {
-		vi.drawLayer(l, col, wg)
-	}
-
-	// Draw segments (rooms) layers
-	for _, l := range vi.layers["segment"] {
-		col := vi.segmentColor[l.MetaData.SegmentId]
-		vi.drawLayer(l, col, wg)
-	}
-
-	// Sync
-	wg.Wait()
-}
-
 func (vi *valetudoImage) upscaleToGGContext() {
 	scale := int(vi.renderer.settings.Scale)
 	scaledImgWidth := vi.unscaledImgWidth * scale
