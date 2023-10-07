@@ -216,30 +216,38 @@ func (vi *valetudoImage) upscaleToGGContext() {
 	scaledImgHeight := vi.unscaledImgHeight * scale
 	scaledImg := image.NewRGBA(image.Rect(0, 0, scaledImgWidth, scaledImgHeight))
 
-	numThreads := runtime.NumCPU()
+	numCPUs := runtime.NumCPU()
 	var wg sync.WaitGroup
-	wg.Add(numThreads)
+	jobs := make(chan int, vi.unscaledImgHeight)
 
-	for i := 0; i < numThreads; i++ {
-		go func(i int) {
-			defer wg.Done()
-			startY := (vi.unscaledImgHeight * i) / numThreads
-			endY := (vi.unscaledImgHeight * (i + 1)) / numThreads
-
-			for y := startY; y < endY; y++ {
+	// Start workers
+	for w := 0; w < numCPUs; w++ {
+		go func() {
+			for y := range jobs {
+				yScale := y * scale
+				yUnscaledImgWidth := y * vi.unscaledImgWidth
 				for x := 0; x < vi.unscaledImgWidth; x++ {
-					col := vi.img.RGBAAt(x, y)
-					for dy := 0; dy < scale; dy++ {
-						for dx := 0; dx < scale; dx++ {
-							newX, newY := x*scale+dx, y*scale+dy
-							scaledImg.SetRGBA(newX, newY, col)
-						}
+					xScale := x * scale
+					for scaleIndex := 0; scaleIndex < scale; scaleIndex++ {
+						copy(scaledImg.Pix[(yScale*scaledImgWidth+xScale+scaleIndex)*4:(yScale*scaledImgWidth+xScale+scaleIndex+1)*4], vi.img.Pix[(yUnscaledImgWidth+x)*4:(yUnscaledImgWidth+x+1)*4])
 					}
 				}
+				for scaleIndex := 1; scaleIndex < scale; scaleIndex++ {
+					copy(scaledImg.Pix[((yScale+scaleIndex)*scaledImgWidth)*4:((yScale+scaleIndex+1)*scaledImgWidth)*4], scaledImg.Pix[(yScale*scaledImgWidth)*4:(yScale+1)*scaledImgWidth*4])
+				}
+				wg.Done()
 			}
-		}(i)
+		}()
 	}
 
+	// Distribute work
+	for y := 0; y < vi.unscaledImgHeight; y++ {
+		wg.Add(1)
+		jobs <- y
+	}
+	close(jobs)
+
+	// Wait for all workers to finish
 	wg.Wait()
 
 	vi.ggContext = gg.NewContextForRGBA(scaledImg)
