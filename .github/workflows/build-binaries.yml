@@ -1,0 +1,52 @@
+name: Build binaries
+run-name: Build binaries ${{ github.event.release.tag_name }}
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Build binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
+          - linux/arm/v6
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Build binary
+        run: |
+          export GOOS=$(echo ${{ matrix.platform }} | awk -F/ '{print $1}')
+          export GOARCH=$(echo ${{ matrix.platform }} | awk -F/ '{print $2}')
+          export GOARM=$(echo ${{ matrix.platform }} | awk -F/ '{print $3}' | sed 's/v//')
+
+          reponame="${{ github.event.repository.name }}"
+          version="${{ github.event.release.tag_name }}"
+          fullarch="${GOARCH}$(echo ${{ matrix.platform }} | awk -F/ '{print $3}')"
+          filename="${reponame}_${version}_${GOOS}_${fullarch}"
+          
+          go build -ldflags "-s -w" -o "$filename" main.go
+
+          echo "FILENAME=$filename" >> $GITHUB_ENV
+
+      - name: Compress binary
+        run: |
+          tar -czvf "${{ env.FILENAME }}.tar.gz" "${{ env.FILENAME }}"
+
+      - name: Upload binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.FILENAME }}.tar.gz
+          tag: ${{ github.event.release.tag_name }}
+          overwrite: false
