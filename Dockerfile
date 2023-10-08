@@ -12,4 +12,4 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} go 
 FROM scratch
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/
 COPY --from=builder /app/valetudopng /valetudopng
-CMD ["/valetudopng"]
+ENTRYPOINT ["/valetudopng"]
