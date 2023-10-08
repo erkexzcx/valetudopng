@@ -35,7 +35,7 @@ jobs:
           fullarch="${GOARCH}$(echo ${{ matrix.platform }} | awk -F/ '{print $3}')"
           filename="${reponame}_${version}_${GOOS}_${fullarch}"
           
-          go build -ldflags "-s -w" -o "$filename" main.go
+          go build -ldflags "-s -w" -o "$filename" cmd/$reponame/main.go
 
           echo "FILENAME=$filename" >> $GITHUB_ENV
 
