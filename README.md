@@ -26,7 +26,7 @@ Broken or dead projects:
 * HTTP endpoint:
   * Access image `http://ip:port/api/map/image`.
   * Debug image and it's coordinates/pixels in robot's coordinates system `http://ip:port/api/map/image/debug`.
-  * Designed to work with HomeAssistant in mind.
+* Designed to work with HomeAssistant in mind.
 
 Supported architectures:
 
