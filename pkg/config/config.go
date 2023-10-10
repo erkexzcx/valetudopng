@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -55,7 +56,7 @@ type Config struct {
 func NewConfig(configFile string) (*Config, error) {
 	c := &Config{}
 
-	yamlFile, err := os.ReadFile("config.yml")
+	yamlFile, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +65,30 @@ func NewConfig(configFile string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return validate(c)
+}
+
+func validate(c *Config) (*Config, error) {
+	if c.Mqtt == nil {
+		return nil, errors.New("missing mqtt section")
+	}
+	if c.HTTP == nil {
+		return nil, errors.New("missing http section")
+	}
+	if c.Map == nil {
+		return nil, errors.New("missing map section")
+	}
+
+	if c.Mqtt.Connection == nil {
+		return nil, errors.New("missing mqtt.connection section")
+	}
+	if c.Mqtt.Topics == nil {
+		return nil, errors.New("missing mqtt.topics section")
+	}
+
+	// Everything else should fail when used (e.g. wrong IP/port will cause
+	// fatal error when starting http server)
 
 	return c, nil
 }
