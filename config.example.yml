@@ -39,7 +39,14 @@ http:
 
 map:
   # Do not render map more than once within below specified interval
-  min_refresh_int: 1000ms
+  min_refresh_int: 5000ms
+
+  # Specify compression level for Golang's PNG library:
+  # 0 - Best speed
+  # 1 - Best compression
+  # 2 - Default compression
+  # 3 - No compression
+  png_compression: 0
 
   # 4 is default
   scale: 4

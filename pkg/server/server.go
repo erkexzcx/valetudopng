@@ -23,8 +23,9 @@ var (
 
 func Start(c *config.Config) {
 	r := renderer.New(&renderer.Settings{
-		Scale:         c.Map.Scale,
-		RotationTimes: c.Map.RotationTimes,
+		Scale:          c.Map.Scale,
+		PNGCompression: c.Map.PNGCompression,
+		RotationTimes:  c.Map.RotationTimes,
 
 		StaticStartX: c.Map.CustomLimits.StartX,
 		StaticStartY: c.Map.CustomLimits.StartY,

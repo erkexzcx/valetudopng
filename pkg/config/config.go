@@ -36,10 +36,11 @@ type TopicsConfig struct {
 }
 
 type MapConfig struct {
-	MinRefreshInt time.Duration `yaml:"min_refresh_int"`
-	Scale         float64       `yaml:"scale"`
-	RotationTimes int           `yaml:"rotate"`
-	CustomLimits  struct {
+	MinRefreshInt  time.Duration `yaml:"min_refresh_int"`
+	PNGCompression int           `yaml:"png_compression"`
+	Scale          float64       `yaml:"scale"`
+	RotationTimes  int           `yaml:"rotate"`
+	CustomLimits   struct {
 		StartX int `yaml:"start_x"`
 		StartY int `yaml:"start_y"`
 		EndX   int `yaml:"end_x"`
@@ -70,6 +71,7 @@ func NewConfig(configFile string) (*Config, error) {
 }
 
 func validate(c *Config) (*Config, error) {
+	// Check if any section is nil (missing)
 	if c.Mqtt == nil {
 		return nil, errors.New("missing mqtt section")
 	}
@@ -79,12 +81,30 @@ func validate(c *Config) (*Config, error) {
 	if c.Map == nil {
 		return nil, errors.New("missing map section")
 	}
-
 	if c.Mqtt.Connection == nil {
 		return nil, errors.New("missing mqtt.connection section")
 	}
 	if c.Mqtt.Topics == nil {
 		return nil, errors.New("missing mqtt.topics section")
+	}
+
+	// Check MQTT topics section
+	if c.Mqtt.Topics.ValetudoIdentifier == "" {
+		return nil, errors.New("missing mqtt.topics.valetudo_identifier value")
+	}
+	if c.Mqtt.Topics.ValetudoPrefix == "" {
+		return nil, errors.New("missing mqtt.topics.valetudo_prefix value")
+	}
+	if c.Mqtt.Topics.HaAutoconfPrefix == "" {
+		return nil, errors.New("missing mqtt.topics.ha_autoconf_prefix value")
+	}
+
+	// Check map section
+	if c.Map.Scale < 1 {
+		return nil, errors.New("missing map.scale cannot be lower than 1")
+	}
+	if c.Map.PNGCompression < 0 || c.Map.PNGCompression > 3 {
+		return nil, errors.New("invalid map.png_compression value")
 	}
 
 	// Everything else should fail when used (e.g. wrong IP/port will cause

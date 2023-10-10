@@ -18,8 +18,9 @@ type Renderer struct {
 }
 
 type Settings struct {
-	Scale         float64
-	RotationTimes int
+	Scale          float64
+	PNGCompression int
+	RotationTimes  int
 
 	// Hardcoded limits for a map within robot's coordinates system
 	StaticStartX, StaticStartY int
@@ -27,6 +28,17 @@ type Settings struct {
 }
 
 func New(s *Settings) *Renderer {
+	switch s.PNGCompression {
+	case 0:
+		pngEncoder.CompressionLevel = png.BestSpeed
+	case 1:
+		pngEncoder.CompressionLevel = png.BestCompression
+	case 2:
+		pngEncoder.CompressionLevel = png.DefaultCompression
+	case 3:
+		pngEncoder.CompressionLevel = png.NoCompression
+	}
+
 	r := &Renderer{
 		settings: s,
 	}
