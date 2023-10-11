@@ -29,13 +29,14 @@ jobs:
           export GOOS=$(echo ${{ matrix.platform }} | awk -F/ '{print $1}')
           export GOARCH=$(echo ${{ matrix.platform }} | awk -F/ '{print $2}')
           export GOARM=$(echo ${{ matrix.platform }} | awk -F/ '{print $3}' | sed 's/v//')
+          export CGO_ENABLED=0
 
           reponame="${{ github.event.repository.name }}"
           version="${{ github.event.release.tag_name }}"
           fullarch="${GOARCH}$(echo ${{ matrix.platform }} | awk -F/ '{print $3}')"
           filename="${reponame}_${version}_${GOOS}_${fullarch}"
           
-          go build -ldflags "-s -w -X main.version=$version" -o "$filename" cmd/$reponame/main.go
+          go build -ldflags '-s -w -X main.version=$version -extldflags "-static"' -o "$filename" cmd/$reponame/main.go
 
           echo "FILENAME=$filename" >> $GITHUB_ENV
 
