@@ -37,6 +37,7 @@ jobs:
           filename="${reponame}_${version}_${GOOS}_${fullarch}"
           
           go build -ldflags "-w -s -X main.version=$version -extldflags \"-static\"" cmd/$reponame/main.go
+          sync
 
           echo "$filename"
           ls -l $filename
