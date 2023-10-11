@@ -38,6 +38,9 @@ jobs:
           
           go build -ldflags "-w -s -X main.version=$version -extldflags \"-static\"" cmd/$reponame/main.go
 
+          echo "$filename"
+          ls -l $filename
+
           echo "FILENAME=$filename" >> $GITHUB_ENV
 
       - name: Compress binary
