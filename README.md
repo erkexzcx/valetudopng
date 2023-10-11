@@ -30,10 +30,10 @@ Broken or dead projects:
 
 Supported architectures:
 
-* linux/amd64
-* linux/arm64
-* linux/armv7
-* linux/armv6
+- **linux/amd64**: x86_64, Intel 64, AMD64, 64-bit PC architecture
+- **linux/arm64**: aarch64, armv8, ARM 64-bit
+- **linux/arm/v7**: armv7l, armv7-a, ARM 32-bit version 7
+- **linux/arm/v6**: armv6l, armv6-a, ARM 32-bit version 6
 
 # Get started
 
