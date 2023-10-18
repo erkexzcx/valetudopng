@@ -24,7 +24,7 @@ type Map struct {
 func startProducer(c *config.MQTTConfig, renderedMapChan, calibrationDataChan chan []byte) {
 	opts := mqttgo.NewClientOptions()
 
-	if c.Connection.UseTLS {
+	if c.Connection.TLSEnabled {
 		opts.AddBroker("ssl://" + c.Connection.Host + ":" + c.Connection.Port)
 		tlsConfig, err := newTLSConfig(c.Connection.TLSCaPath, c.Connection.TLSInsecure, c.Connection.TLSMinVersion)
 		if err != nil {
