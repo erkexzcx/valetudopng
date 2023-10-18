@@ -25,6 +25,8 @@ type ConnectionConfig struct {
 	Username       string `yaml:"username"`
 	Password       string `yaml:"password"`
 	ClientIDPrefix string `yaml:"client_id_prefix"`
+	UseTLS         bool   `yaml:"use_tls"`
+	TLSMinVersion  string `yaml:"tls_min_version"`
 	TLSCaPath      string `yaml:"tls_ca_path"`
 	TLSInsecure    bool   `yaml:"tls_insecure"`
 }

@@ -1,10 +1,7 @@
 package mqtt
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"log"
-	"os"
 	"time"
 
 	mqttgo "github.com/eclipse/paho.mqtt.golang"
@@ -14,25 +11,22 @@ import (
 
 func startConsumer(c *config.MQTTConfig, mapJSONChan chan []byte) {
 	opts := mqttgo.NewClientOptions()
-	opts.AddBroker("tcp://" + c.Connection.Host + ":" + c.Connection.Port)
+
+	if c.Connection.UseTLS {
+		opts.AddBroker("ssl://" + c.Connection.Host + ":" + c.Connection.Port)
+		tlsConfig, err := newTLSConfig(c.Connection.TLSCaPath, c.Connection.TLSInsecure, c.Connection.TLSMinVersion)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		opts.SetTLSConfig(tlsConfig)
+	} else {
+		opts.AddBroker("tcp://" + c.Connection.Host + ":" + c.Connection.Port)
+	}
+
 	opts.SetClientID(c.Connection.ClientIDPrefix + "_consumer")
 	opts.SetUsername(c.Connection.Username)
 	opts.SetPassword(c.Connection.Password)
 	opts.SetAutoReconnect(true)
-
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: c.Connection.TLSInsecure,
-	}
-	if c.Connection.TLSCaPath != "" {
-		caCert, err := os.ReadFile(c.Connection.TLSCaPath)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-		tlsConfig.RootCAs = caCertPool
-	}
-	opts.SetTLSConfig(tlsConfig)
 
 	// On received message
 	var handler mqttgo.MessageHandler = func(client mqttgo.Client, msg mqttgo.Message) {

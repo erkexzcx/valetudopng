@@ -7,13 +7,15 @@ mqtt:
     # Will become valetudopng_consumer and valetudopng_producer
     client_id_prefix: valetudopng
 
-    # Leave empty or delete these fields if not used
+    # Leave empty or delete these fields if authorization is not used
     username:
     password:
 
-    # Leave empty or delete these fields if not used
+    # Leave empty or delete these fields if TLS is not used
+    use_tls: false
+    tls_min_version: # Available values are 1.0, 1.1, 1.2 and 1.3. Defaults to Go's default (1.2) if not provided.
     tls_ca_path:
-    tls_insecure:
+    tls_insecure: false
 
   topics:
     # Should match "Topic prefix" in Valetudo MQTT settings
