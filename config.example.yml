@@ -13,7 +13,7 @@ mqtt:
 
     # Leave empty or delete these fields if TLS is not used
     tls_enabled: false
-    tls_min_version: # Available values are 1.0, 1.1, 1.2 and 1.3. Defaults to Go's default (1.2) if not provided.
+    tls_min_version: # Available values are 1.0, 1.1, 1.2 and 1.3. Defaults to Go's default (1.2) if not set.
     tls_ca_path:
     tls_insecure: false
 
