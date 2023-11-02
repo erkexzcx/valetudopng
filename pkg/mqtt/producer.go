@@ -72,7 +72,7 @@ func startProducer(c *config.MQTTConfig, renderedMapChan, calibrationDataChan ch
 
 func producerMapUpdatesHandler(client mqttgo.Client, renderedMapChan chan []byte, topic string) {
 	for img := range renderedMapChan {
-		token := client.Publish(topic, 1, false, img)
+		token := client.Publish(topic, 1, true, img)
 		token.Wait()
 		if token.Error() != nil {
 			log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
@@ -108,7 +108,7 @@ func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTCon
 
 func producerCalibrationDataHandler(client mqttgo.Client, renderedMapChan chan []byte, topic string) {
 	for img := range renderedMapChan {
-		token := client.Publish(topic, 1, false, img)
+		token := client.Publish(topic, 1, true, img)
 		token.Wait()
 		if token.Error() != nil {
 			log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
