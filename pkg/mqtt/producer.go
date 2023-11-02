@@ -106,8 +106,8 @@ func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTCon
 	}
 }
 
-func producerCalibrationDataHandler(client mqttgo.Client, renderedMapChan chan []byte, topic string) {
-	for img := range renderedMapChan {
+func producerCalibrationDataHandler(client mqttgo.Client, calibrationDataChan chan []byte, topic string) {
+	for img := range calibrationDataChan {
 		token := client.Publish(topic, 1, true, img)
 		token.Wait()
 		if token.Error() != nil {
