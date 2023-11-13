@@ -84,7 +84,7 @@ func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTCon
 	announceTopic := c.Topics.HaAutoconfPrefix + "/camera/" + c.Topics.ValetudoIdentifier + "/" + c.Topics.ValetudoPrefix + "_" + c.Topics.ValetudoIdentifier + "_map/config"
 
 	js := simplejson.New()
-	js.Set("name", c.Topics.ValetudoIdentifier+"_map")
+	js.Set("name", "Map")
 	js.Set("unique_id", c.Topics.ValetudoIdentifier+"_rendered_map")
 	js.Set("topic", rmt)
 
@@ -120,7 +120,7 @@ func producerAnnounceCalibrationTopic(client mqttgo.Client, cdt string, c *confi
 	announceTopic := c.Topics.HaAutoconfPrefix + "/sensor/" + c.Topics.ValetudoIdentifier + "/" + c.Topics.ValetudoPrefix + "_" + c.Topics.ValetudoIdentifier + "_calibration/config"
 
 	js := simplejson.New()
-	js.Set("name", c.Topics.ValetudoIdentifier+"_calibration")
+	js.Set("name", "Calibration")
 	js.Set("unique_id", c.Topics.ValetudoIdentifier+"_calibration")
 	js.Set("state_topic", cdt)
 
