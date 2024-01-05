@@ -107,8 +107,8 @@ func loadAssetRobot(r *Renderer) {
 		draw.BiLinear.Transform(rotatedImg, rotationMatrix, img, img.Bounds(), draw.Over, nil)
 
 		// Create a new image with the scaled dimensions
-		newWidth := rotatedImg.Bounds().Dx() * int(r.settings.Scale) / 4
-		newHeight := rotatedImg.Bounds().Dy() * int(r.settings.Scale) / 4
+		newWidth := int(rotatedImg.Bounds().Dx() * r.settings.Scale / 4)
+		newHeight := int(rotatedImg.Bounds().Dy() * r.settings.Scale / 4)
 		scaledImg := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
 		// Draw the rotated image onto the scaled image
@@ -130,8 +130,8 @@ func loadAssetCharger(r *Renderer) {
 		panic(err)
 	}
 
-	newWidth := img.Bounds().Dx() * int(r.settings.Scale) / 4
-	newHeight := img.Bounds().Dy() * int(r.settings.Scale) / 4
+	newWidth := int(img.Bounds().Dx() * r.settings.Scale / 4)
+	newHeight := int(img.Bounds().Dy() * r.settings.Scale / 4)
 	scaledImg := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
 	draw.BiLinear.Scale(scaledImg, scaledImg.Bounds(), img, img.Bounds(), draw.Over, nil)
