@@ -99,7 +99,7 @@ func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTCon
 		panic(err)
 	}
 
-	token := client.Publish(announceTopic, 1, false, announcementData)
+	token := client.Publish(announceTopic, 1, true, announcementData)
 	token.Wait()
 	if token.Error() != nil {
 		log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
@@ -135,7 +135,7 @@ func producerAnnounceCalibrationTopic(client mqttgo.Client, cdt string, c *confi
 		panic(err)
 	}
 
-	token := client.Publish(announceTopic, 1, false, announcementData)
+	token := client.Publish(announceTopic, 1, true, announcementData)
 	token.Wait()
 	if token.Error() != nil {
 		log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
