@@ -48,6 +48,14 @@ type MapConfig struct {
 		EndX   int `yaml:"end_x"`
 		EndY   int `yaml:"end_y"`
 	} `yaml:"custom_limits"`
+	Colors struct {
+		Floor       string   `yaml:"floor"`
+		Obstacle    string   `yaml:"obstacle"`
+		Path        string   `yaml:"path"`
+		NoGoArea    string   `yaml:"no_go_area"`
+		VirtualWall string   `yaml:"virtual_wall"`
+		Segments    []string `yaml:"segments"`
+	} `yaml:"colors"`
 }
 
 type Config struct {
@@ -69,7 +77,40 @@ func NewConfig(configFile string) (*Config, error) {
 		return nil, err
 	}
 
-	return validate(c)
+	c, err = validate(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return setDefaultColors(c)
+}
+
+func setDefaultColors(c *Config) (*Config, error) {
+	if c.Map.Colors.Floor == "" {
+		c.Map.Colors.Floor = "#0076ffff"
+	}
+
+	if c.Map.Colors.Obstacle == "" {
+		c.Map.Colors.Obstacle = "#5d5d5d"
+	}
+
+	if c.Map.Colors.Path == "" {
+		c.Map.Colors.Path = "#ffffffff"
+	}
+
+	if c.Map.Colors.NoGoArea == "" {
+		c.Map.Colors.NoGoArea = "#ff00004a"
+	}
+
+	if c.Map.Colors.VirtualWall == "" {
+		c.Map.Colors.VirtualWall = "#ff0000bf"
+	}
+
+	if len(c.Map.Colors.Segments) < 4 {
+		c.Map.Colors.Segments = []string{"#19a1a1ff", "#7ac037ff", "#ff9b57ff", "#f7c841ff"}
+	}
+
+	return c, nil
 }
 
 func validate(c *Config) (*Config, error) {
