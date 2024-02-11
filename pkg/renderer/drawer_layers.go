@@ -28,12 +28,12 @@ func (vi *valetudoImage) drawLayers() {
 	}
 
 	// Send layers to the channel
-	col := color.RGBA{0, 118, 255, 255}
+	col := vi.renderer.settings.FloorColor
 	for _, l := range vi.layers["floor"] {
 		layerCh <- layerColor{l, col}
 	}
 
-	col = color.RGBA{30, 100, 100, 255}
+	col = vi.renderer.settings.ObstacleColor
 	for _, l := range vi.layers["wall"] {
 		layerCh <- layerColor{l, col}
 	}

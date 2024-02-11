@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"image"
+	"image/color"
 	"image/png"
 	"math"
 
@@ -25,6 +26,13 @@ type Settings struct {
 	// Hardcoded limits for a map within robot's coordinates system
 	StaticStartX, StaticStartY int
 	StaticEndX, StaticEndY     int
+
+	FloorColor       color.RGBA
+	ObstacleColor    color.RGBA
+	PathColor        color.RGBA
+	NoGoAreaColor    color.RGBA
+	VirtualWallColor color.RGBA
+	SegmentColors    []color.RGBA
 }
 
 func New(s *Settings) *Renderer {

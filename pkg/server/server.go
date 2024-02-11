@@ -3,9 +3,11 @@ package server
 import (
 	"encoding/base64"
 	"fmt"
+	"image/color"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -31,6 +33,18 @@ func Start(c *config.Config) {
 		StaticStartY: c.Map.CustomLimits.StartY,
 		StaticEndX:   c.Map.CustomLimits.EndX,
 		StaticEndY:   c.Map.CustomLimits.EndY,
+
+		FloorColor:       HexColor(c.Map.Colors.Floor),
+		ObstacleColor:    HexColor(c.Map.Colors.Obstacle),
+		PathColor:        HexColor(c.Map.Colors.Path),
+		NoGoAreaColor:    HexColor(c.Map.Colors.NoGoArea),
+		VirtualWallColor: HexColor(c.Map.Colors.VirtualWall),
+		SegmentColors: []color.RGBA{
+			HexColor(c.Map.Colors.Segments[0]),
+			HexColor(c.Map.Colors.Segments[1]),
+			HexColor(c.Map.Colors.Segments[2]),
+			HexColor(c.Map.Colors.Segments[3]),
+		},
 	})
 
 	if c.HTTP.Enabled {
@@ -101,4 +115,17 @@ func ByteCountSI(b int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.1f%cB", float64(b)/float64(div), "kMGTPE"[exp])
+}
+
+func HexColor(hex string) color.RGBA {
+	red, _ := strconv.ParseUint(hex[1:3], 16, 8)
+	green, _ := strconv.ParseUint(hex[3:5], 16, 8)
+	blue, _ := strconv.ParseUint(hex[5:7], 16, 8)
+	alpha := uint64(255)
+
+	if len(hex) > 8 {
+		alpha, _ = strconv.ParseUint(hex[7:9], 16, 8)
+	}
+
+	return color.RGBA{R: uint8(red), G: uint8(green), B: uint8(blue), A: uint8(alpha)}
 }

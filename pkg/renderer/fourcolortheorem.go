@@ -73,14 +73,7 @@ func (g *graph) colorVertices() {
 	}
 }
 
-var fourColors = []color.RGBA{
-	{R: 25, G: 161, B: 161, A: 255}, // Teal
-	{R: 122, G: 192, B: 55, A: 255}, // Light Green
-	{R: 255, G: 155, B: 87, A: 255}, // Orange
-	{R: 247, G: 200, B: 65, A: 255}, // Light Yellow
-}
-
-func (vi *valetudoImage) findFourColors() {
+func (vi *valetudoImage) findFourColors(fourColors []color.RGBA) {
 	g := graph{}
 
 	for _, layer := range vi.layers["segment"] {
