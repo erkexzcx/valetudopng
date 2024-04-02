@@ -74,3 +74,16 @@ map:
     start_y: 
     end_x: 
     end_y: 
+
+  # You can customize map colors with these
+  colors:
+    floor: "#0076ff"
+    obstacle: "#5d5d5d"
+    path: "#ffffff"
+    no_go_area: "#ff00004a"
+    virtual_wall: "#ff0000bf"
+    segments:
+      - "#19a1a1"
+      - "#7ac037"
+      - "#ff9b57"
+      - "#f7c841"

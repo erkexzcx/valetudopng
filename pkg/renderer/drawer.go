@@ -75,7 +75,7 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 
 	// Load colors for each segment
 	vi.segmentColor = make(map[string]color.RGBA)
-	vi.findFourColors()
+	vi.findFourColors(r.settings.SegmentColors)
 
 	// Find map bounds within robot's coordinates system (from given layers)
 	vi.robotCoords.minX = math.MaxInt32
@@ -140,7 +140,8 @@ func (vi *valetudoImage) DrawAll() {
 	vi.upscaleToGGContext()
 
 	// Draw path entity
-	vi.ggContext.SetRGB255(255, 255, 255)
+	col := vi.renderer.settings.PathColor
+	vi.ggContext.SetRGBA255(int(col.R), int(col.G), int(col.B), int(col.A))
 	vi.ggContext.SetLineWidth(float64(vi.renderer.settings.Scale) * 0.75)
 	for _, e := range vi.entities["path"] {
 		vi.drawEntityPath(e)
@@ -148,7 +149,8 @@ func (vi *valetudoImage) DrawAll() {
 	vi.ggContext.Stroke()
 
 	// Draw virtual_wall entities
-	vi.ggContext.SetRGBA255(255, 0, 0, 192)
+	col = vi.renderer.settings.VirtualWallColor
+	vi.ggContext.SetRGBA255(int(col.R), int(col.G), int(col.B), int(col.A))
 	vi.ggContext.SetLineWidth(float64(vi.renderer.settings.Scale) * 1.5)
 	vi.ggContext.SetLineCapButt()
 	for _, e := range vi.entities["virtual_wall"] {
@@ -158,13 +160,15 @@ func (vi *valetudoImage) DrawAll() {
 	// Draw no_go_area entities
 	lineWidth := float64(vi.renderer.settings.Scale * 0.5)
 	noGoAreas := vi.entities["no_go_area"]
-	vi.ggContext.SetRGBA255(255, 0, 0, 75)
+	col = vi.renderer.settings.NoGoAreaColor
+	vi.ggContext.SetRGBA255(int(col.R), int(col.G), int(col.B), int(col.A))
 	vi.ggContext.SetLineWidth(0)
 	for _, e := range noGoAreas {
 		vi.drawEntityNoGoArea(e)
 	}
 	vi.ggContext.Fill()
-	vi.ggContext.SetRGB255(255, 0, 0)
+	col = vi.renderer.settings.VirtualWallColor
+	vi.ggContext.SetRGBA255(int(col.R), int(col.G), int(col.B), int(col.A))
 	vi.ggContext.SetLineWidth(lineWidth)
 	for _, e := range noGoAreas {
 		vi.drawEntityNoGoArea(e)
