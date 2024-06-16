@@ -2,20 +2,48 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"io"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/erkexzcx/valetudopng"
 )
 
-func runWebServer(bind string) {
+func runWebServer(ctx context.Context, wg *sync.WaitGroup, panic chan bool, bind string) {
+
 	http.HandleFunc("/api/map/image", requestHandlerImage)
 	http.HandleFunc("/api/map/image/debug", requestHandlerDebug)
+	http.HandleFunc("/api/map/image/debug/lovelace/", requestHandlerDebugConfig)
 	http.HandleFunc("/api/map/image/debug/static/", requestHandlerDebugStatic)
-	panic(http.ListenAndServe(bind, nil))
+	server := http.Server{
+		Addr:    bind,
+		Handler: http.DefaultServeMux,
+	}
+
+	go func() {
+	DONE:
+		for {
+			select {
+			case <-ctx.Done():
+				break DONE
+			case <-panic:
+				break DONE
+			}
+		}
+		server.Shutdown(context.Background())
+		wg.Done()
+	}()
+
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		slog.Error("HTTP server error", slog.String("error", err.Error()))
+		panic <- true
+	}
+	slog.Info("HTTP server shut down")
 }
 
 func isResultNotReady() bool {
@@ -116,4 +144,20 @@ func requestHandlerDebugStatic(w http.ResponseWriter, r *http.Request) {
 	reader := bytes.NewReader(data)
 
 	http.ServeContent(w, r, info.Name(), info.ModTime(), reader)
+}
+
+func requestHandlerDebugConfig(w http.ResponseWriter, _ *http.Request) {
+	if isResultNotReady() {
+		http.Error(w, "image not yet loaded", http.StatusAccepted)
+		return
+	}
+
+	// TODO: add lock
+	w.Header().Set("Content-Length", strconv.Itoa(len(renderedCfg)))
+	//	w.Header().Set("Content-Type", "application/x-yaml") // is this preferred? annoying when the browser downloads instead of shows
+	w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
+	w.WriteHeader(200)
+	renderedPNGMux.RLock()
+	defer renderedPNGMux.RUnlock()
+	w.Write(renderedCfg)
 }

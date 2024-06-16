@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"time"
 
@@ -12,6 +13,7 @@ type MQTTConfig struct {
 	Connection    *ConnectionConfig `yaml:"connection"`
 	Topics        *TopicsConfig     `yaml:"topics"`
 	ImageAsBase64 bool              `yaml:"image_as_base64"`
+	SendTimeout   time.Duration     `yaml:"send_timeout"`
 }
 
 type HTTPConfig struct {
@@ -59,9 +61,11 @@ type MapConfig struct {
 }
 
 type Config struct {
-	Mqtt *MQTTConfig `yaml:"mqtt"`
-	HTTP *HTTPConfig `yaml:"http"`
-	Map  *MapConfig  `yaml:"map"`
+	Mqtt     *MQTTConfig `yaml:"mqtt"`
+	HTTP     *HTTPConfig `yaml:"http"`
+	Map      *MapConfig  `yaml:"map"`
+	LogLevel string      `yaml:"logLevel"`
+	LogType  string      `yaml:"logType"`
 }
 
 func NewConfig(configFile string) (*Config, error) {
@@ -131,6 +135,11 @@ func validate(c *Config) (*Config, error) {
 		return nil, errors.New("missing mqtt.topics section")
 	}
 
+	// Set default timeout for messages being published if it's not set
+	if c.Mqtt.SendTimeout == 0 {
+		c.Mqtt.SendTimeout = 10 * time.Second
+	}
+
 	// Check MQTT topics section
 	if c.Mqtt.Topics.ValetudoIdentifier == "" {
 		return nil, errors.New("missing mqtt.topics.valetudo_identifier value")
@@ -150,6 +159,34 @@ func validate(c *Config) (*Config, error) {
 		return nil, errors.New("invalid map.png_compression value")
 	}
 
+	// Check logging
+	lvl := new(slog.LevelVar)
+	switch c.LogLevel {
+	case "debug":
+		lvl.Set(slog.LevelDebug)
+	case "info":
+		lvl.Set(slog.LevelInfo)
+	case "warn":
+		lvl.Set(slog.LevelWarn)
+	case "error":
+		lvl.Set(slog.LevelError)
+	default:
+		lvl.Set(slog.LevelInfo)
+	}
+	if c.LogType == "json" {
+		logger := slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+				Level: lvl,
+			}))
+		slog.SetDefault(logger)
+
+	} else {
+		logger := slog.New(
+			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+				Level: lvl,
+			}))
+		slog.SetDefault(logger)
+	}
 	// Everything else should fail when used (e.g. wrong IP/port will cause
 	// fatal error when starting http server)
 

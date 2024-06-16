@@ -1,7 +1,9 @@
 package mqtt
 
 import (
-	"log"
+	"context"
+	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/bitly/go-simplejson"
@@ -21,14 +23,16 @@ type Map struct {
 	Topic    string `json:"topic"`
 }
 
-func startProducer(c *config.MQTTConfig, renderedMapChan, calibrationDataChan chan []byte) {
+func startProducer(ctx context.Context, pwg *sync.WaitGroup, panic chan bool, c *config.MQTTConfig, renderedMapChan, calibrationDataChan chan []byte) {
+	defer pwg.Done()
 	opts := mqttgo.NewClientOptions()
 
 	if c.Connection.TLSEnabled {
 		opts.AddBroker("ssl://" + c.Connection.Host + ":" + c.Connection.Port)
 		tlsConfig, err := newTLSConfig(c.Connection.TLSCaPath, c.Connection.TLSInsecure, c.Connection.TLSMinVersion)
 		if err != nil {
-			log.Fatalln(err)
+			slog.Error("Failed to setup TLS config", slog.String("error", err.Error()))
+			panic <- true
 		}
 		opts.SetTLSConfig(tlsConfig)
 	} else {
@@ -42,45 +46,83 @@ func startProducer(c *config.MQTTConfig, renderedMapChan, calibrationDataChan ch
 
 	// On connection
 	opts.OnConnect = func(client mqttgo.Client) {
-		log.Println("[MQTT producer] Connected")
+		slog.Info("[MQTT producer] Connected")
 	}
 
 	// On disconnection
 	opts.OnConnectionLost = func(client mqttgo.Client, err error) {
-		log.Printf("[MQTT producer] Connection lost: %v", err)
+		slog.Error("[MQTT producer] Connection lost: %v", slog.String("error", err.Error()))
 	}
 
 	// Initial connection
 	client := mqttgo.NewClient(opts)
-	for {
+	const maxTries = 24
+	success := false
+	for i := 1; i <= maxTries; i++ { // try to connect for 2 minutes, then give up
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
-			log.Printf("[MQTT producer] Failed to connect: %v. Retrying in 5 seconds...\n", token.Error())
+			slog.Error("[MQTT producer] Failed to connect to MQTT, trying again in 5s", slog.Int("tries left", maxTries-i), slog.String("type", "consumer"), slog.String("error", token.Error().Error()))
 			time.Sleep(5 * time.Second)
 		} else {
+			success = true
 			break
 		}
 	}
-
+	if !success {
+		slog.Error("Publisher failed to connect to MQTT")
+		panic <- true
+		return
+	}
+	var wg sync.WaitGroup
+	wg.Add(2)
 	renderedMapTopic := c.Topics.ValetudoPrefix + "/" + c.Topics.ValetudoIdentifier + "/MapData/map"
-	go produceAnnounceMapTopic(client, renderedMapTopic, c)
-	go producerMapUpdatesHandler(client, renderedMapChan, renderedMapTopic)
+	go produceAnnounceMapTopic(&wg, client, renderedMapTopic, c)
+	go producerMapUpdatesHandler(ctx, &wg, panic, client, renderedMapChan, renderedMapTopic, c)
 
+	wg.Add(2)
 	calibrationTopic := c.Topics.ValetudoPrefix + "/" + c.Topics.ValetudoIdentifier + "/MapData/calibration"
-	go producerAnnounceCalibrationTopic(client, calibrationTopic, c)
-	go producerCalibrationDataHandler(client, calibrationDataChan, calibrationTopic)
+	go producerAnnounceCalibrationTopic(&wg, client, calibrationTopic, c)
+	go producerCalibrationDataHandler(ctx, &wg, panic, client, calibrationDataChan, calibrationTopic, c)
+
+	done := make(chan bool)
+	go func() {
+		wg.Wait()
+		done <- true
+	}()
+DONE:
+	for {
+		select {
+		case <-done:
+			break DONE
+		case <-panic:
+			break DONE
+		case <-ctx.Done():
+			break DONE
+		}
+	}
+	slog.Info("[MQTT producer] shutdown")
 }
 
-func producerMapUpdatesHandler(client mqttgo.Client, renderedMapChan chan []byte, topic string) {
-	for img := range renderedMapChan {
-		token := client.Publish(topic, 1, true, img)
-		token.Wait()
-		if token.Error() != nil {
-			log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
+func producerMapUpdatesHandler(ctx context.Context, wg *sync.WaitGroup, panic chan bool, client mqttgo.Client, renderedMapChan chan []byte, topic string, c *config.MQTTConfig) {
+	defer wg.Done()
+	for {
+		select {
+		case img := <-renderedMapChan:
+			token := client.Publish(topic, 1, true, img)
+			if ok := token.WaitTimeout(c.SendTimeout); !ok || token.Error() != nil {
+				slog.Error("[MQTT producer] Failed to publish", slog.String("error", token.Error().Error()))
+			} else {
+				slog.Debug("[MQTT producer] published a message")
+			}
+		case <-ctx.Done():
+			return
+		case <-panic:
+			return
 		}
 	}
 }
 
-func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTConfig) {
+func produceAnnounceMapTopic(wg *sync.WaitGroup, client mqttgo.Client, rmt string, c *config.MQTTConfig) {
+	defer wg.Done()
 	announceTopic := c.Topics.HaAutoconfPrefix + "/camera/" + c.Topics.ValetudoIdentifier + "/" + c.Topics.ValetudoPrefix + "_" + c.Topics.ValetudoIdentifier + "_map/config"
 
 	js := simplejson.New()
@@ -95,28 +137,40 @@ func produceAnnounceMapTopic(client mqttgo.Client, rmt string, c *config.MQTTCon
 	js.Set("device", device)
 
 	announcementData, err := js.MarshalJSON()
-	if err != nil {
-		panic(err)
+	if err != nil { // this isn't really possible
+		slog.Error("[MQTT producer] failed to parse annoucement")
+		return
 	}
 
 	token := client.Publish(announceTopic, 1, true, announcementData)
-	token.Wait()
-	if token.Error() != nil {
-		log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
+	if ok := token.WaitTimeout(c.SendTimeout); !ok || token.Error() != nil {
+		slog.Error("[MQTT producer] Failed to publish", slog.String("error", token.Error().Error()))
+	} else {
+		slog.Debug("[MQTT producer] published AnnounceMapTopic")
 	}
 }
 
-func producerCalibrationDataHandler(client mqttgo.Client, calibrationDataChan chan []byte, topic string) {
-	for img := range calibrationDataChan {
-		token := client.Publish(topic, 1, true, img)
-		token.Wait()
-		if token.Error() != nil {
-			log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
+func producerCalibrationDataHandler(ctx context.Context, wg *sync.WaitGroup, panic chan bool, client mqttgo.Client, calibrationDataChan chan []byte, topic string, c *config.MQTTConfig) {
+	defer wg.Done()
+	for {
+		select {
+		case img := <-calibrationDataChan:
+			token := client.Publish(topic, 1, true, img)
+			if ok := token.WaitTimeout(c.SendTimeout); !ok || token.Error() != nil {
+				slog.Error("[MQTT producer] Failed to publish", slog.String("error", token.Error().Error()))
+			} else {
+				slog.Debug("[MQTT producer] published a message")
+			}
+		case <-ctx.Done():
+			return
+		case <-panic:
+			return
 		}
 	}
 }
 
-func producerAnnounceCalibrationTopic(client mqttgo.Client, cdt string, c *config.MQTTConfig) {
+func producerAnnounceCalibrationTopic(wg *sync.WaitGroup, client mqttgo.Client, cdt string, c *config.MQTTConfig) {
+	defer wg.Done()
 	announceTopic := c.Topics.HaAutoconfPrefix + "/sensor/" + c.Topics.ValetudoIdentifier + "/" + c.Topics.ValetudoPrefix + "_" + c.Topics.ValetudoIdentifier + "_calibration/config"
 
 	js := simplejson.New()
@@ -131,13 +185,15 @@ func producerAnnounceCalibrationTopic(client mqttgo.Client, cdt string, c *confi
 	js.Set("device", device)
 
 	announcementData, err := js.MarshalJSON()
-	if err != nil {
-		panic(err)
+	if err != nil { // this isn't really possible
+		slog.Error("[MQTT producer] failed to parse CalibrationTopic annoucement")
+		return
 	}
 
 	token := client.Publish(announceTopic, 1, true, announcementData)
-	token.Wait()
-	if token.Error() != nil {
-		log.Printf("[MQTT producer] Failed to publish: %v\n", token.Error())
+	if ok := token.WaitTimeout(c.SendTimeout); !ok || token.Error() != nil {
+		slog.Error("[MQTT producer] Failed to publish", slog.String("error", token.Error().Error()))
+	} else {
+		slog.Debug("[MQTT producer] published AnnounceCalibrationTopic")
 	}
 }
