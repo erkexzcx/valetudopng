@@ -16,6 +16,7 @@ type Renderer struct {
 	assetRobot   map[int]image.Image
 	assetCharger image.Image
 	settings     *Settings
+	conf         *config.Config
 }
 
 type Settings struct {
@@ -35,7 +36,7 @@ type Settings struct {
 	SegmentColors    []color.RGBA
 }
 
-func New(s *Settings) *Renderer {
+func New(s *Settings, c *config.Config) *Renderer {
 	switch s.PNGCompression {
 	case 0:
 		pngEncoder.CompressionLevel = png.BestSpeed
@@ -49,6 +50,7 @@ func New(s *Settings) *Renderer {
 
 	r := &Renderer{
 		settings: s,
+		conf:     c,
 	}
 	loadAssetRobot(r)
 	loadAssetCharger(r)
@@ -82,6 +84,7 @@ func (r *Renderer) Render(data []byte, mc *config.MapConfig) (*Result, error) {
 		Settings:    vi.renderer.settings,
 		Calibration: vi.getCalibrationPointsJSON(),
 		PixelSize:   vi.valetudoJSON.PixelSize,
+		CardCfg:     vi.YamlConf(),
 	}, nil
 }
 

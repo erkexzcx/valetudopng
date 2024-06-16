@@ -15,7 +15,8 @@ type Result struct {
 	RobotCoords *RbtCoords
 	Settings    *Settings
 	Calibration []byte
-	PixelSize   int // taken from JSON, for traslating image coords to robot's coords system coordinates
+	PixelSize   int    // taken from JSON, for traslating image coords to robot's coords system coordinates
+	CardCfg     []byte // generated configuration for lovelace card
 }
 
 type ImgSize struct {

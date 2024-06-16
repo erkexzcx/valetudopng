@@ -1,10 +1,12 @@
 package server
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"image/color"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -19,6 +21,7 @@ import (
 
 var (
 	renderedPNG    = make([]byte, 0)
+	renderedCfg    = make([]byte, 0)
 	renderedPNGMux = &sync.RWMutex{}
 	result         *renderer.Result
 )
@@ -45,63 +48,82 @@ func Start(c *config.Config) {
 			HexColor(c.Map.Colors.Segments[2]),
 			HexColor(c.Map.Colors.Segments[3]),
 		},
-	})
+	}, c)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+
+	panic := make(chan bool)
 	if c.HTTP.Enabled {
-		go runWebServer(c.HTTP.Bind)
+		wg.Add(1)
+		go runWebServer(ctx, &wg, panic, c.HTTP.Bind)
 	}
 
 	mapJSONChan := make(chan []byte)
 	renderedMapChan := make(chan []byte)
 	calibrationDataChan := make(chan []byte)
-	go mqtt.Start(c.Mqtt, mapJSONChan, renderedMapChan, calibrationDataChan)
+	wg.Add(1)
+	go mqtt.Start(ctx, &wg, panic, c.Mqtt, mapJSONChan, renderedMapChan, calibrationDataChan)
 
 	renderedAt := time.Now().Add(-c.Map.MinRefreshInt)
-	for payload := range mapJSONChan {
-		if time.Now().Before(renderedAt) {
-			log.Println("Skipping image render due to min_refresh_int")
-			continue
+	wg.Add(1)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				wg.Done()
+				return
+			case payload := <-mapJSONChan:
+				if time.Now().Before(renderedAt) {
+					slog.Info("Skipping image render due to min_refresh_int")
+					continue
+				}
+				renderedAt = time.Now().Add(c.Map.MinRefreshInt)
+
+				tsStart := time.Now()
+				res, err := r.Render(payload, c.Map)
+				if err != nil {
+					log.Fatalln("Error occurred while rendering map:", err)
+				}
+				drawnInMS := time.Since(tsStart).Milliseconds()
+				img, err := res.RenderPNG()
+				if err != nil {
+					slog.Error("Error occurred while rendering PNG image", slog.String("error", err.Error()))
+					return
+				}
+				renderedIn := time.Since(tsStart).Milliseconds() - drawnInMS
+
+				slog.Info("Image rendered", slog.Int64("drawTime", drawnInMS),
+					slog.Int64("renderedIn", renderedIn), slog.String("bytes", ByteCountSI(int64(len(img)))))
+
+				if !(c.Mqtt.ImageAsBase64 && !c.HTTP.Enabled) {
+					renderedPNGMux.Lock()
+					renderedPNG = img
+					renderedCfg = res.CardCfg
+					result = res
+					renderedPNGMux.Unlock()
+				}
+
+				if c.Mqtt.ImageAsBase64 {
+					img = []byte(base64.StdEncoding.EncodeToString(img))
+				}
+
+				// Send data to MQTT
+				renderedMapChan <- img
+				calibrationDataChan <- res.Calibration
+			}
 		}
-		renderedAt = time.Now().Add(c.Map.MinRefreshInt)
-
-		tsStart := time.Now()
-		res, err := r.Render(payload, c.Map)
-		if err != nil {
-			log.Fatalln("Error occurred while rendering map:", err)
-		}
-		drawnInMS := time.Since(tsStart).Milliseconds()
-
-		img, err := res.RenderPNG()
-		if err != nil {
-			log.Fatalln("Error occurred while rendering PNG image:", err)
-		}
-		renderedIn := time.Since(tsStart).Milliseconds() - drawnInMS
-
-		log.Printf("Image rendered! drawing:%dms, encoding:%dms, size:%s\n", drawnInMS, renderedIn, ByteCountSI(int64(len(img))))
-
-		if !(c.Mqtt.ImageAsBase64 && !c.HTTP.Enabled) {
-			renderedPNGMux.Lock()
-			renderedPNG = img
-			result = res
-			renderedPNGMux.Unlock()
-		}
-
-		if c.Mqtt.ImageAsBase64 {
-			img = []byte(base64.StdEncoding.EncodeToString(img))
-		}
-
-		// Send data to MQTT
-		renderedMapChan <- img
-		calibrationDataChan <- res.Calibration
-	}
-
+	}()
 	// Create a channel to wait for OS interrupt signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	// Block main function here until an interrupt is received
 	<-interrupt
-	fmt.Println("Program interrupted")
+	cancel()
+	slog.Warn("Program interrupted")
+	wg.Wait()
+	slog.Warn("Program shut down")
 }
 
 func ByteCountSI(b int64) string {
