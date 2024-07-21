@@ -1,7 +1,3 @@
-# This project is not actively maintained
-
-I no longer have Roborock vacuum robot and I cannot test any of app's features. I am planning to get one in the near future, likelly the newest one, but for now - this project is currently on-hold...
-
 # ValetudoPNG
 
 ValetudoPNG is a service designed to render map from Valetudo-enabled vacuum robot into a more accessible PNG format. This PNG map is sent to Home Assistant via MQTT, where it can be viewed as a real-time camera feed. ValetudoPNG was specifically developed to integrate with third-party frontend cards, such as the [PiotrMachowski/lovelace-xiaomi-vacuum-map-card](https://github.com/PiotrMachowski/lovelace-xiaomi-vacuum-map-card).
