@@ -23,6 +23,8 @@ type valetudoImage struct {
 	// JSON data
 	valetudoJSON *ValetudoJSON
 
+	xiaomiMapCardConfig *XiaomiMapCardConfig
+
 	// Renderer reference, for easy access
 	renderer *Renderer
 
@@ -49,8 +51,9 @@ type valetudoImage struct {
 func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 	// Create new object
 	vi := &valetudoImage{
-		valetudoJSON: valetudoJSON,
-		renderer:     r,
+		valetudoJSON:        valetudoJSON,
+		renderer:            r,
+		xiaomiMapCardConfig: newMapConf(r),
 	}
 
 	// Prepare layers and entities (to speed up iterations)
@@ -63,7 +66,12 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 		} else {
 			vi.layers[layer.Type] = append(vi.layers[layer.Type], layer)
 		}
+		if layer.Type == "segment" {
+			vi.xiaomiMapCardConfig.addSegment(&layer.MetaData, layer.Dimensions)
+		}
 	}
+	vi.xiaomiMapCardConfig.setMapModes()
+
 	for _, entity := range vi.valetudoJSON.Entities {
 		_, found := vi.entities[entity.Type]
 		if !found {
@@ -72,7 +80,6 @@ func newValetudoImage(valetudoJSON *ValetudoJSON, r *Renderer) *valetudoImage {
 			vi.entities[entity.Type] = append(vi.entities[entity.Type], entity)
 		}
 	}
-
 	// Load colors for each segment
 	vi.segmentColor = make(map[string]color.RGBA)
 	vi.findFourColors(r.settings.SegmentColors)
@@ -260,4 +267,8 @@ func (vi *valetudoImage) getRotationFunc(subtractOne bool) rotationFunc {
 		return func(x, y int) (int, int) { return y, vi.unscaledImgHeight - x }
 	}
 	return func(x, y int) (int, int) { return x, y }
+}
+
+func (vi *valetudoImage) YamlConf() []byte {
+	return vi.xiaomiMapCardConfig.asYaml()
 }
